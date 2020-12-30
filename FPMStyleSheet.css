@@ -1,0 +1,358 @@
+
+/*NOTE: Wall paper info is: Wallpaper white blue gradient linear #ffffff #00bfff 270° 2560x1440*/
+#map {
+  height: 95%;
+  width:70% ; 
+  text-align: left ;
+  float:left ; 
+}
+
+#palette {
+  width:28%;
+  height: 90% ;  
+  /*background-color:white ;*/
+  float: left ; 
+  margin-top: 0;
+  margin-right: 2% ; 
+}
+
+html, body {
+  height: 100%;
+  width:100% ;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0px ;
+  padding: 0px;
+ /* background-image: url("webBackground1.jpg"); */
+}
+
+body {
+  background-image: url("webBackground1.jpg");
+}
+
+#header {
+  height: 10% ; 
+  width: 100% ;
+  background-color: #532b55 ;   
+  border:solid ; 
+  margin:0px;
+  outline:0px ;
+  
+}
+
+#header div, #header #loadD, #header #loadDisplay {
+  height: 100%;
+  width:15% ;
+  float: left;
+  background-color: #532b55;
+  text-align: left;
+  font-size: 36px ;
+  font-family: Arial, Helvetica, sans-serif ;
+  text-align: center;
+  color: white ;
+}
+
+
+
+#header #loadD {
+    display: none;
+}
+
+#header div:hover, #header #loadDisplay:hover {
+  background-color: #7e4181;
+  cursor: pointer ;
+}
+
+#header #homeD {
+  width: 20% ;
+}
+
+#header #homeD:hover {
+  background: transparent;
+  cursor: default ;
+}
+
+#header #tutorialButton {
+  font-size: 30px;
+}
+
+
+
+
+#newMapItem, #removeButton {
+  height: 10% ; 
+  width: 100% ; 
+  background-color: white ; 
+  align-self: left ;
+  float: left ;  
+  border-style: solid ;
+  text-align: left;
+  font-size: 40px ;
+  font-family: Arial, Helvetica, sans-serif ;
+  margin: 0px ;
+  padding: 0px ; 
+  list-style: none ; 
+}
+
+#newMapItem:hover, #removeButton:hover, #hallAdderButton:hover, #placeAdderButton:hover, #viewNavBar #viewExitButton:hover, #viewNavBar #viewSaveButton:hover {
+  background-color: #CCC;
+  cursor: pointer ;
+}
+
+#removeButton {
+    display: none;
+}
+
+#hallAdderButton, #placeAdderButton {
+  height: 10% ; 
+  width: 100% ; 
+  background-color: white ; 
+  align-self: left ;
+  float: left ;  
+  border-style: solid ;
+  text-align: left;
+  font-size: 40px ;
+  font-family: Arial, Helvetica, sans-serif ;
+  margin: 0px ;
+  padding-left: 0px ; 
+  padding: 0 ; 
+  list-style: none ; 
+  display: none ; 
+}
+
+#newMapItemList {
+  padding-left: 0px;
+  list-style: none ;
+}
+
+#HallwayDiv {
+  border: solid ; 
+  height: 450px;
+  width: 100% ; 
+  float: left ; 
+  display: none;
+}
+
+#HallwayDiv input, #placeDiv input {
+  border-radius: 25px;
+  border: 2px solid black;
+  padding: 20px; 
+  width: 20%;
+  height: 15px; 
+  float: left ; 
+}
+
+#HallwayDiv input:focus, #placeDiv input:focus {
+  border-color:blue ; 
+}
+
+#HallwayDiv p, #placeDiv p {
+  float:left ; 
+  width: 18% ; 
+  font-family: Arial, Helvetica, sans-serif ;
+  font-size: 14px;
+}
+
+#HallwayDiv h2, #HallwayDiv h3, #placeDiv h2, #placeDiv h3 {
+  font-size: 20px ;
+  font-family: Arial, Helvetica, sans-serif ;
+
+}
+
+#placeDiv {
+    border: solid ; 
+    height: 500px;
+    width: 100% ; 
+    float: left ; 
+    display: none;
+}
+
+
+#placeDiv #tempButton {
+    width: 50px ;
+    height: 20px ;
+}
+
+#placeDiv nav {
+    display: block ; 
+
+    
+}
+
+#placeDiv nav ul {
+    height:125px; 
+    width:90%;
+    overflow: hidden; 
+    overflow: scroll;
+    float: left;
+}
+
+
+#placeDiv nav ul li {
+    font-family: Arial, Helvetica, sans-serif;
+    list-style:none ; 
+    height: 19px ; 
+    width: 80% ; 
+    margin: 10px ; 
+    font-size: 18px ;
+    float:left ; 
+    border-bottom: solid;
+}
+
+#placeDiv nav ul img {
+    height: 10px ; 
+    width: 10px ; 
+    float: right ; 
+}
+
+#placeDiv nav ul img:hover {
+    background-color: #CCC;
+    cursor: pointer ;
+    height: 10px ; 
+    width: 10px ; 
+    content: url('redX.png') ; 
+}
+
+/*view modes style sheet */
+
+#viewNavBar {
+  height: 10% ; 
+  width: 35% ;
+  position: absolute;
+  z-index: 99;
+  margin-top: 2% ; 
+  display: none ; 
+  
+  /*
+  background-color: white ;  
+  border:solid ; 
+  
+  */
+  }
+  
+  #viewNavBar div {
+      height: 100%;
+      width:25% ;
+      float: left;
+      background-color: white;
+      border-radius: 20%;
+      border: solid;
+      text-align: left;
+      font-size: 40px ;
+      font-family: Arial, Helvetica, sans-serif ;
+  }
+
+  #viewNavBar #viewModeDiv {
+    width: 40% ;
+  }
+
+  #viewRightDiv {
+    left: 60% ;
+    z-index: 98;
+    width: 500px;
+    position: absolute;
+    display: none;
+
+    
+  }
+
+  #viewSearchInput, #startSearchButton {
+    height: 30px ;
+    width: 300px;
+    border: black;
+    border-style: solid;
+    background: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    outline: none;
+    font-size: 18px;
+    color:black;
+    font-weight: bold;
+    letter-spacing: 1px;
+    z-index: 99;
+    position: relative;
+    float:left ; 
+    
+    margin-top: 2%;
+}
+
+#viewSearchInput {
+  display: none;
+}
+
+
+
+#viewPlaceSuggestions {
+  top: 6% ; 
+   
+  float:left ; 
+  z-index: 99;
+  position: relative;
+  overflow: hidden; 
+  overflow: scroll;
+  overflow-x: hidden;
+  
+}
+
+#viewPlaceSuggestions li {
+  display:block ; 
+  width: 350px;
+  height:100px ; 
+  background-color: #ffffff ;
+  border-style: solid;
+  border-color: black;
+  border-width: 3px ; 
+  margin: 5px ;  
+
+
+}
+
+#viewPlaceSuggestions li:hover, #startSearchButton:hover, #viewCancelButton:hover {
+  background-color: #CCC;
+  cursor: pointer ;
+}
+
+#viewPlaceSuggestions li h1 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px ;
+
+}
+
+#viewPlaceSuggestions li h2 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+}
+
+#viewCancelButton {
+  font-family: Arial, Helvetica, sans-serif;
+  display:block;
+  width:60px;
+  height:60px;
+  line-height:60px;
+  border: 2px solid black;
+  border-radius: 50%;
+
+  text-align:center;
+  text-decoration:none;
+  
+  
+  box-shadow: 0 0 3px gray;
+  font-size:20px;
+  font-weight:bold;
+   
+  position: relative;
+  float: left ; 
+
+  z-index: 99;
+  text-align: center;
+  display: none;
+
+  margin-top: 2%;
+}
+
+
+
+
+
+
+
+

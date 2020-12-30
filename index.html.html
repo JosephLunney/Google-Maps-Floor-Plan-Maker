@@ -1,0 +1,858 @@
+
+<!--
+Floor Plan Maker
+Jan 5th 2020
+Joseph Lunney 
+17jal21@queensu.ca 
+
+I am currently looking for a summer job and greatly appreciate you checking out my newest project!
+
+I reccomend you check out the intializeFloorGraph function and the DijkstrasAlgorithm function.
+
+-->
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Floor Plan Maker</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" type="text/css" href="FPMStyleSheet.css">
+      
+  
+  </head>
+  <body>
+
+    <div id = header>
+      <div id = "homeD">Creation Mode</div>
+      <div id = "saveD">Save</div>
+     <input type = "file" id = "loadD" /> 
+     <label for="loadD" id = "loadDisplay">Load</label>
+      <div id = "viewD">View</div>
+      <div id = "tutorialButton">Click here for info!</div>
+    </div>
+
+    <div id="map"></div>
+
+    <div id = "palette">
+    <!--
+      <div id = "saveButton">Save</div>
+      <div id = "loadButton"> <input type = "file" /></div>
+      <div id = "newMapItem">New item</div>
+      <div id = "removeHallButton">Remove hall</div>
+      <div id = "initializeFloorGraphButton">Set up graph</div>
+      <div id ="randomButton"> Dijkstra's Algorithm </div>
+    -->
+      <ul id="newMapItemList">
+        <li id = "newMapItem">New Item</li>
+        <li id = "hallAdderButton">Add Hallway/Room</li>
+        <li id = "placeAdderButton">Add Place</li>
+
+        
+      </ul>
+
+      <div id = placeDiv>
+
+        <h1> location name </h1>
+    
+        <br>
+        <p>Name:</p>
+        <input type="text" id="pnameInput" type="text">
+        <br> <br> <br> <br> 
+        
+        <p>Latitude</p>
+        <input type="text" id="platInput" type="text">
+        <p>Longitude</p>
+        <input type="text" id="plngInput" type="text">
+        <br> <br> <br>
+    
+        <h2> Key words </h2>
+        <input type="text" id="pwordsInput" type="text">
+        <button id = "ptempButton">Add Word </button>
+        <br> <br> <br>
+    
+        <nav>
+        <ul id = "pwordList">
+    
+        </ul>
+    </nav>
+    
+  </div>
+
+      <div id = "HallwayDiv">
+
+        <h2>Hallway</h2>
+    
+        <h3>Center:</h3>
+        <br>
+        <p>Latitude:</p>
+        <input type="text" id="hlatInput" type="text" value="1">
+        <p>Longitude:</p>
+        <input type="text" id="hlngInput" type="text" value="2">
+        <br> 
+        <br> 
+        <br> 
+        <br> 
+        <p>Bearing:</p>
+        <input type="text" id="bearingInput">
+        <br> 
+        <br>
+        <br> 
+        <br> 
+        <p>Length:</p>
+        <input type="text" id="lengthInput" name="lengthInput" type="number">
+        <p>Width:</p>
+        <input type="text" id="widthInput" name="widthInput" type="number">
+        <br> 
+        <br> 
+        <br> 
+        <br> 
+        <!--
+        <p>Color:</p>
+        <input type="text" id="colorInput">
+        -->
+    
+    
+    
+      </div>
+
+      <div id = "removeButton"> Remove Current Item</div>  
+       
+     
+  
+
+    </div>
+
+
+    <!--View mode html starts here-->
+    <div id = "viewNavBar">
+      <div id = "viewModeDiv">View Mode</div>
+      <div id = "viewSaveButton">save</div>
+      <div id = "viewExitButton">Exit</div>
+
+  </div>
+
+  <div id = "viewRightDiv">
+    <input type="text" class="input" placeholder="Search" id = "viewSearchInput">
+    <div id = "startSearchButton"> Find a place in the map </div>
+    <div id = "viewCancelButton">X</div>
+    <ul id = "viewPlaceSuggestions"> </ul>
+  </div>
+
+    
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0ttZsTPTea51DS9o-q6RR6yi1sBmZH70&callback=initMap"></script> 
+    <script src = "CustomOverlay.js" type = "text/javascript"></script>
+    <script src = "hallNode.js" type = "text/javascript"></script>
+    <script src = "FileSaver.js" type = "text/javascript"></script>
+    <script src = "FloorAnalysisFunctions.js" type = "text/javascript"></script>
+    <script src = "Places.js" type = "text/javascript"></script>
+    <script src = "viewMode.js" type = "text/javascript"></script>
+
+    <script>
+
+       
+
+      var nmiToggle = true ; 
+
+      newMapItem.onclick = function() {
+        if (nmiToggle) {
+          //initializeHallway(center, [20,20,0], map, hIndex) ;
+          document.getElementById("hallAdderButton").style.display = "block";
+          document.getElementById("placeAdderButton").style.display = "block";
+          nmiToggle = false ; 
+        } else {
+          document.getElementById("hallAdderButton").style.display = "none";
+          document.getElementById("placeAdderButton").style.display = "none";
+          nmiToggle = true ; 
+        }
+        } ;
+
+
+
+    </script>
+      
+    <script>
+
+
+      var hallwayArray = new Map() ; 
+      var hIndex = 1 ; 
+
+      var map;
+      var palette = document.getElementById("palette") ;
+      var header = document.getElementById("header") ;
+      var placeDiv = document.getElementById("placeDiv") ;
+      var hallDiv = document.getElementById("HallwayDiv") ;
+      var removeButton = document.getElementById("removeButton") ;
+      
+      var network = new Map(); 
+      var nIndex = 0 ; 
+      var networkArray = [] ; 
+
+      var currentHallway = -1 ; 
+      var currentPlace = -1 ; 
+
+      //var mapListenerTag, order = 1, start, end ; 
+      var graphNotReady = true ; 
+
+      var placeMap = new Map() ;
+      var placeIndex = 0 ; 
+
+      /*
+      This initializes the map and also creates the functionality of the buttons of this application.
+      */
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 62.323907, lng: -150.109291},
+          zoom: 18
+        });
+        
+        initializeHallway(map.center, [20,20,0], map, hIndex) ;
+
+        hallAdderButton = document.getElementById("hallAdderButton") ; 
+        placeAdderButton = document.getElementById("placeAdderButton") ;
+        
+        placeAdderButton.onclick = function() {
+          initializePlace(null, map.center, [], placeIndex, map) ; 
+        }
+
+        hallAdderButton.onclick = function() {
+          initializeHallway(map.center, [20,20,0], map, hIndex) ;
+        }
+
+        document.getElementById("saveD").onclick = function() {
+          saveMap() ; 
+        }
+
+        
+        initializeLoadButton() ;
+        
+        document.getElementById("tutorialButton").onclick = function() {
+          giveInfo() ; 
+        }
+
+        //View mode button initializers
+        document.getElementById("viewExitButton").onclick = function() {
+          exitViewMode() ;
+        }
+
+        document.getElementById("viewSaveButton").onclick = function() {
+          saveMap() ;
+        }
+
+
+        document.getElementById("viewD").onclick = function() {
+          if (!(initializeFloorGraph())) {
+            beginViewMode() ;
+          }
+        }
+
+        document.getElementById("viewSearchInput").onkeyup = function() {
+          handleViewSearchChange() ; 
+        }
+
+        document.getElementById("startSearchButton").onclick = function() {
+          startPlaceSearch() ; 
+        }
+
+        document.getElementById("viewCancelButton").onclick = function() {
+          cancelPlaceSearch() ; 
+        }
+
+        
+        
+        
+      }
+
+      /*
+      This takes an array of strings as a parameter and loads the map from a file saved from this application. 
+      */
+
+      function initializeLoadButton() {
+        loadButtonInput = document.querySelector('input[type="file"]') ;
+
+        loadButtonInput.addEventListener('change', function(e) {
+          const reader = new FileReader() ; 
+          reader.onload = function() {
+           // console.log(reader.result) ;
+            lines = reader.result.split('\n') ; 
+            loadMap2(lines) ; 
+          }
+          reader.readAsText(loadButtonInput.files[0]) ; 
+      }, false) ; 
+      }
+
+      function loadMap(lines) {
+        console.log("loading new map") ;
+        //lat , lng, vetical, horizontal, bearing
+        var lat, lng, vertical, horizontal, bearing, center ; 
+        
+        for (const i of hallwayArray.keys()) {
+          removeHall(i) ; 
+        }
+
+        hIndex = 1 ; 
+        
+
+        hallwayArray = new Map() ; 
+        
+
+        for (i = 0; i < lines.length - 1; i++) {
+          line = lines[i].split(',') ;
+          
+          lat = parseFloat(line[0]) ; 
+          lng = parseFloat(line[1]) ; 
+          vertical = parseFloat(line[2]) ; 
+          horizontal = parseFloat(line[3]) ; 
+          bearing = parseFloat(line[4]) ; 
+
+          center = new google.maps.LatLng(lat, lng) ; 
+
+          initializeHallway(center, [vertical, horizontal, bearing], map, hIndex) ;
+        }
+
+        for (const i of hallwayArray.keys()) {
+          hallwayArray.get(i).hideMarkers() ; 
+
+        }
+
+
+
+      }
+
+      function loadMap2(lines) {
+        var lat, lng, vertical, horizontal, bearing, center ; 
+        var name, keyWords = [] ; 
+        
+        for (const i of hallwayArray.keys()) {
+          removeHall(i) ; 
+        }
+
+        for (const i of placeMap.keys()) {
+          removePlace(i) ;
+        }
+
+        hIndex = 1 ; 
+        placeIndex = 0 ; 
+        
+
+        hallwayArray = new Map() ; 
+        placeMap = new Map() ;
+        var i = 0 ;
+
+        while (lines[i] != "places" && i < 500) {
+          line = lines[i].split(',') ;
+          
+          lat = parseFloat(line[0]) ; 
+          lng = parseFloat(line[1]) ; 
+          vertical = parseFloat(line[2]) ; 
+          horizontal = parseFloat(line[3]) ; 
+          bearing = parseFloat(line[4]) ; 
+
+          center = new google.maps.LatLng(lat, lng) ; 
+
+          initializeHallway(center, [vertical, horizontal, bearing], map, hIndex) ;
+          
+          i++ ; 
+        }
+
+        for (const i of hallwayArray.keys()) {
+          hallwayArray.get(i).hideMarkers() ; 
+        }
+
+        i++ ; 
+
+        while (i < lines.length - 1) {
+          console.log("here") ;
+          line = lines[i].split(',') ;
+
+          name = line[0] ; 
+          lat = parseFloat(line[1]) ; 
+          lng = parseFloat(line[2]) ;
+          center = new google.maps.LatLng(lat, lng) ; 
+          keyWords = [] ; 
+
+          for (t = 3; t < line.length; t++) {
+            keyWords.push(line[t]) ;
+          }
+
+          console.log(keyWords) ;
+
+          initializePlace(name, center, keyWords, placeIndex) ;
+          i++ ; 
+        }
+
+        i = 0 ;
+        lat = 0 ;
+        lng = 0 ;
+
+        for (const t of hallwayArray.keys()) {
+          lat += hallwayArray.get(t).center.lat() ;
+          lng += hallwayArray.get(t).center.lng() ;
+          i++ ;
+        }
+
+        lat = lat/i ; 
+        lng = lng/i ; 
+
+        map.setCenter(new google.maps.LatLng(lat, lng)) ;
+
+
+      }
+
+      /*
+      This saves the map into a text file for later use. 
+      */
+      function saveMap() {
+        var lines = [], keyWords = [] ; 
+        var hall, bearing, vertical, horizontal, center ;
+        var line ;
+        var name ;  
+        
+        for (const i of hallwayArray.keys()) {
+          vertical = hallwayArray.get(i).dimensions[0] ; 
+          horizontal = hallwayArray.get(i).dimensions[1] ; 
+          bearing = hallwayArray.get(i).bearing ; 
+          center = hallwayArray.get(i).center ; 
+
+          //lat, lng, vertical, horizontal, bearing
+
+          vertical = vertical.toString() ;
+
+          if (vertical != "NaN") {
+          horizontal = horizontal.toString() ;
+          bearing = bearing.toString()
+          lat = center.lat().toString() ; 
+          lng = center.lng().toString() ; 
+
+          line = lat + "," + lng + "," + vertical + "," + horizontal + "," + bearing + "\n" ; 
+
+          lines.push(line) ; 
+          }
+        }
+
+        lines.push("places\n") ;
+
+        for (const i of placeMap.keys()) {
+
+          center = placeMap.get(i).position ; 
+          lat = center.lat() ;
+          if (!(isNaN(lat))) {
+            lng = center.lng() ; 
+            name = placeMap.get(i).name ;
+            keyWords = placeMap.get(i).words ; 
+
+            line = name + "," + lat + "," + lng ;  
+
+            for (x = 0; x < keyWords.length; x++) {
+              line = line + "," + keyWords[x] ; 
+            }
+
+            line += "\n" ; 
+            lines.push(line) ; 
+
+          }
+
+        }
+
+        var blob = new Blob(lines, {type: "text/plain"}) ;
+        var name = prompt("Enter the name of my map") ; 
+
+        
+
+        saveAs(blob, (name + ".txt"))
+
+
+      }
+
+      function giveInfo() {
+        alert("Hello and welcome to my floor plan maker!") ; 
+        alert("To get started, I recommend clickling on \"Load\", selecting the EXAMPLE BUILDING file and then playing with it.") ;
+        alert("To see to the most interesting part of this project, click on \"View\" and search for a location in the map!") ;
+      }
+
+
+      /*
+      This is used to choose which hallway will be removed if the user presses the "remove hallway button.
+      It is also used to make bulding floor plans more aestheticly pleasing. 
+      "
+      */
+      function setActiveHallway(hall) {
+        currentPlace = -1 ; 
+
+        placeDiv.style.display = "none" ; 
+
+        currentHallway = hall ; 
+
+        hallwayArray.get(currentHallway).showMarkers() ; 
+        
+
+        for (const i of hallwayArray.keys()) {
+          if (i != hall) {
+            hallwayArray.get(i).hideMarkers() ; 
+            //hallwayArray.get(i).changeColor("blue.jpg") ;
+          }
+        }
+
+        setUpHallDiv(hall) ;
+
+        removeButton.style.display = "block" ; 
+
+        removeButton.onclick = function() {
+          removeHall(hall) ; 
+        }
+
+
+
+      }
+
+      function setUpHallDiv(hall) {
+
+        var latInput = document.getElementById("hlatInput") ; 
+        var lngInput = document.getElementById("hlngInput") ; 
+        var bearingInput = document.getElementById("bearingInput") ; 
+        var lengthInput = document.getElementById("lengthInput") ; 
+        var widthInput = document.getElementById("widthInput") ;
+        
+        hallDiv.style.display = "block" ; 
+
+        latInput.value = hallwayArray.get(hall).center.lat() ;
+        lngInput.value = hallwayArray.get(hall).center.lng() ;
+        bearingInput.value = hallwayArray.get(hall).bearing ; 
+        lengthInput.value = hallwayArray.get(hall).dimensions[0] ; 
+        widthInput.value = hallwayArray.get(hall).dimensions[1] ; 
+
+        latInput.onchange = function() {
+          var tempNum = parseFloat(latInput.value) ; 
+          if (tempNum <= 90 && tempNum >= -90 && !isNaN(tempNum)) {
+          hallwayArray.get(hall).updateCenter(new google.maps.LatLng(tempNum, hallwayArray.get(hall).center.lng())) ; 
+          hallwayArray.get(hall).centerMarker.setPosition(hallwayArray.get(hall).center) ;
+          }
+        } ;
+
+        lngInput.onchange = function() {
+          var tempNum = parseFloat(lngInput.value) ; 
+          if (tempNum <= 180 && tempNum >= -180 && !isNaN(tempNum)) {
+            hallwayArray.get(hall).updateCenter(new google.maps.LatLng(hallwayArray.get(hall).center.lat(), tempNum))  ; 
+            hallwayArray.get(hall).centerMarker.setPosition(hallwayArray.get(hall).center) ;
+          }
+        } ;
+
+        bearingInput.onchange = function() {
+          var tempNum = parseFloat(bearingInput.value) ; 
+          if (tempNum >= 0 && tempNum < 360 && !isNaN(tempNum)) {
+            hallwayArray.get(hall).bearing = tempNum ; 
+            hallwayArray.get(hall).updateCenter(hallwayArray.get(hall).center) ; 
+          }
+
+        }
+
+        lengthInput.onchange = function() {
+          var tempNum = parseFloat(lengthInput.value) ;
+          if (tempNum > 1 && !isNaN(tempNum)) {
+            hallwayArray.get(hall).dimensions[0] = tempNum ; 
+            hallwayArray.get(hall).updateCenter(hallwayArray.get(hall).center) ;
+          }
+          
+
+        }
+
+        widthInput.onchange = function() {
+          var tempNum = parseFloat(widthInput.value) ;
+          if (tempNum > 1 && !isNaN(tempNum)) {
+            hallwayArray.get(hall).dimensions[1] = tempNum ; 
+            hallwayArray.get(hall).updateCenter(hallwayArray.get(hall).center) ;
+          }
+          
+
+        }
+
+      }
+
+      function setActivePlace(place) {
+        currentPlace = place ; 
+
+        for (const i of hallwayArray.keys()) {
+            hallwayArray.get(i).hideMarkers() ; 
+            //hallwayArray.get(i).changeColor("blue.jpg") ;
+        }
+
+        currentHallway = -1 ; 
+        hallDiv.style.display = "none" ; 
+
+        setUpPlaceDiv(place) ; 
+
+        removeButton.style.display = "block" ; 
+
+        removeButton.onclick = function() {
+          removePlace(place) ; 
+        }
+
+      }
+
+      function setUpPlaceDiv(place) {
+        placeDiv.style.display = "block" ;
+
+        var nameInput = document.getElementById("pnameInput") ; 
+        var latInput = document.getElementById("platInput") ; 
+        var lngInput = document.getElementById("plngInput") ; 
+        var wordsInput = document.getElementById("pwordsInput") ;
+        var tempButton = document.getElementById("ptempButton") ;
+        var wordList = document.getElementById("pwordList") ; 
+
+
+
+        if (placeMap.get(currentPlace).name == null) {
+          nameInput.placeholder = "unnamed" ; 
+          nameInput.value = "" ; 
+        } else {
+          nameInput.value = placeMap.get(currentPlace).name ; 
+        }
+
+        nameInput.onchange = function() {
+          if (nameInput.value.indexOf(",") == -1) {
+            placeMap.get(place).name = nameInput.value ; 
+          } else {
+            alert("\",\" is not allowed in name") ; 
+          }
+        } ;
+
+        latInput.value = placeMap.get(place).position.lat() ;
+        lngInput.value = placeMap.get(place).position.lng() ;
+        
+        while(wordList.firstChild) wordList.removeChild(wordList.firstChild);
+
+        for (t = 0; t < placeMap.get(place).words.length; t++) {
+          wordList.appendChild(placeMap.get(place).wordDivs[t]) ; 
+        }
+        
+        latInput.onchange = function() {
+          var tempNum = parseFloat(latInput.value) ; 
+          if (tempNum <= 90 && tempNum >= -90 && !isNaN(tempNum)) {
+          placeMap.get(place).setPosition(new google.maps.LatLng((latInput.value), placeMap.get(place).position.lng())) ; 
+          }
+        } ;
+
+        lngInput.onchange = function() {
+          var tempNum = parseFloat(lngInput.value) ; 
+          if (tempNum <= 180 && tempNum >= -180 && !isNaN(tempNum)) {
+            placeMap.get(place).setPosition(new google.maps.LatLng(placeMap.get(place).position.lat(), lngInput.value))  ; 
+          }
+        } ;
+
+        tempButton.onclick = function() {
+          addWord(place) ;  
+        }
+      } 
+
+      function addWord(place) {
+        var txtVal = document.getElementById("pwordsInput").value ; 
+        
+
+        if (!(placeMap.get(place).words.includes(txtVal)) && txtVal != "" && txtVal.indexOf(",") == -1) {
+          var listNode = document.getElementById("pwordList") ;
+          var newNode = document.createElement("li") ;
+          var txtNode = document.createTextNode(txtVal) ;
+          var img = document.createElement("img") ; 
+          img.src = "blackX.png" ;     
+    
+          placeMap.get(place).words.push(txtVal) ;
+      
+          newNode.appendChild(txtNode) ;
+          newNode.appendChild(img) ;
+          listNode.appendChild(newNode) ;
+    
+          placeMap.get(place).wordDivs.push(newNode) ; 
+
+          img.onclick = function() {
+            removeWord(txtVal, place) ;
+          } ; 
+        } else {
+          alert("Only one occurence of each word allowed") ;
+        }
+    
+      document.getElementById("pwordsInput").value = "" ; 
+    }
+
+      function addWordOnInitialization(place, index) {
+        var txtVal = placeMap.get(place).words[index] ; 
+      
+        var newNode = document.createElement("li") ;
+        var txtNode = document.createTextNode(txtVal) ;
+        var img = document.createElement("img") ; 
+        img.src = "blackX.png" ;     
+      
+        newNode.appendChild(txtNode) ;
+        newNode.appendChild(img) ;
+    
+        placeMap.get(place).wordDivs.push(newNode) ; 
+
+        img.onclick = function() {
+          removeWord(txtVal, place) ;
+        } ; 
+      }
+
+      function removeWord(txtVal, place) {
+        var index = 0 ; 
+        console.log("Item being removed: " + txtVal) ;
+        
+        while (!(placeMap.get(place).words[index] === txtVal)) {
+            index++ ; 
+        }
+        console.log("Index: " + index) ;
+        placeMap.get(place).words.splice(index, 1) ;
+        placeMap.get(place).wordDivs.splice(index, 1) ; 
+
+        var list = document.getElementById("pwordList") ;
+        list.removeChild(list.childNodes[index]) ;
+      }
+
+      function removePlace(place) {
+        placeMap.get(place).placeMarker.setMap(null) ; 
+        placeMap.delete(place) ; 
+        placeDiv.style.display = "none" ; 
+        removeButton.style.display = "none" ; 
+      }
+
+    
+
+
+      /*
+      This function is used to remove a hall if the user decides to do so. 
+      It takes the hall's hIndex as a parameter. 
+      */
+      function removeHall(hall) {
+        hallwayArray.get(hall).setMap(null) ; 
+        hallwayArray.get(hall).rotationMarker.setMap(null) ; 
+        hallwayArray.get(hall).rightMarker.setMap(null) ; 
+        hallwayArray.get(hall).bottomMarker.setMap(null) ;
+        hallwayArray.get(hall).centerMarker.setMap(null) ;
+        hallwayArray.delete(hall) ;
+        hallDiv.style.display = "none" ; 
+        removeButton.style.display = "none" ;
+      }
+
+
+      /*
+
+      This function gets the start and end points to use dijkstras Algorithm from the user.  
+      
+      */
+      function getstartAndEnd(event) {
+      
+        if (order == 1) {
+          start = new google.maps.LatLng(event.LatLng.lat(), event.LatLng.lng()) ; 
+          order = 2 ; 
+        } else if (order == 2) {
+          end = new google.maps.LatLng(event.LatLng.lat(), event.LatLng.lng()) ; 
+          order = 1 ; 
+          dijkstrasAlgorithm(start, end) ; 
+
+          start = null ; 
+          end = null ; 
+
+          google.maps.event.removeListener(mapListenerTag) ; 
+
+        }
+
+      }
+
+
+     
+
+      function initializePlace(name, location, words, pIndex) {
+        placeMap.set(pIndex, new Place(name, location, words, pIndex, map)) ;
+
+        placeMap.get(pIndex).placeMarker.addListener("drag", function() {
+          placeMap.get(pIndex).setPosition(placeMap.get(pIndex).placeMarker.getPosition()) ;
+          setActivePlace(pIndex) ;
+        }) ; 
+
+        placeMap.get(pIndex).placeMarker.addListener("click", function() {
+          placeMap.get(pIndex).setPosition(placeMap.get(pIndex).placeMarker.getPosition()) ;
+          setActivePlace(pIndex) ;
+        }) ;
+
+        for (i = 0; i < words.length; i++) {
+          addWordOnInitialization(pIndex, i) ;
+        }
+
+        placeIndex++ ; 
+
+      }
+
+      /*
+      This function creates and manages new hallways that the user wants to add. 
+
+      Parameters: 
+        -The first is the center of the hallway and where it will be spawned in. 
+        -The second is the "dimensions" array. This contains its length, width and the angle of it. Google maps did not really make it clear on how to rotate them and it took me a suprising amount of work. 
+        -It takes the map that it is meant to be on. 
+        -It also takes its hIndex becasue even tho it is a global variable, a new instance must be made for each function call. 
+      */
+      function initializeHallway(center, dimensions, map, hallIndex) {
+
+        hallwayArray.set(hallIndex, new CustomOverlay(center, dimensions, map)) ;
+
+        hallwayArray.get(hallIndex).centerMarker.addListener('click', function() {
+          setActiveHallway(hallIndex) ; 
+        }) ;
+        
+        hallwayArray.get(hallIndex).centerMarker.addListener('drag', function() {
+          hallwayArray.get(hallIndex).updateCenter(hallwayArray.get(hallIndex).centerMarker.getPosition()) ;
+          setActiveHallway(hallIndex) ; 
+        }) ;
+
+        hallwayArray.get(hallIndex).centerMarker.addListener('dragend', function() {
+          hallwayArray.get(hallIndex).updateCenter(hallwayArray.get(hallIndex).centerMarker.getPosition()) ;
+          //removeHallConnections(hallIndex) ; 
+         // handleTransformation(hallIndex) ;
+        }) ;
+
+        hallwayArray.get(hallIndex).rotationMarker.addListener('drag', function() {
+          hallwayArray.get(hallIndex).rotate() ;
+          setActiveHallway(hallIndex) ; 
+        }) ;
+
+        hallwayArray.get(hallIndex).rotationMarker.addListener('dragend', function() {
+          rotationLatLng = hallwayArray.get(hallIndex).getOverlayBoundaries(hallwayArray.get(hallIndex).center, hallwayArray.get(hallIndex).dimensions[0]/2, hallwayArray.get(hallIndex).bearing) ;
+          hallwayArray.get(hallIndex).rotationMarker.setPosition(rotationLatLng) ;
+        }) ;
+
+        hallwayArray.get(hallIndex).rightMarker.addListener('drag', function() {
+          hallwayArray.get(hallIndex).adjustRight() ; 
+          setActiveHallway(hallIndex) ; 
+        }) ;
+
+        hallwayArray.get(hallIndex).rightMarker.addListener('dragend', function() {
+          hallwayArray.get(hallIndex).rightMarker.setPosition(hallwayArray.get(hallIndex).right) ; 
+        }) ;
+
+        hallwayArray.get(hallIndex).bottomMarker.addListener('drag', function() {
+          hallwayArray.get(hallIndex).adjustBottom() ; 
+          setActiveHallway(hallIndex) ; 
+
+        }) ;
+
+        hallwayArray.get(hallIndex).bottomMarker.addListener('dragend', function() {
+          hallwayArray.get(hallIndex).bottomMarker.setPosition(hallwayArray.get(hallIndex).bottom) ; 
+        }) ;
+
+        hIndex++; 
+      }
+
+      
+
+      google.maps.event.addDomListener(window, 'load', initMap);
+
+    </script>
+
+   
+    
+ <!--   <script src = "DebugOverlay.js" type = "text/javascript"></script> --> 
+
+  </body>
+</html>
